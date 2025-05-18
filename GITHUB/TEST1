@@ -1,0 +1,113 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+using namespace std;
+
+// Product Class
+class Product {
+public:
+    string productID, name;
+    float price;
+    Product(string id, string n, float p) : productID(id), name(n), price(p) {}
+};
+
+// Shopping Cart Class
+class ShoppingCart {
+public:
+    vector<pair<Product, int>> cart;
+    void addProduct(Product p, int quantity) {
+        cart.push_back({p, quantity});
+        cout << "Product added successfully!" << endl;
+    }
+    void viewCart() {
+        cout << "\nShopping Cart:" << endl;
+        cout << "--------------------------------------------------" << endl;
+        cout << left << setw(10) << "Product ID" << setw(15) << "Name" << setw(10) << "Price" << "Quantity" << endl;
+        cout << "--------------------------------------------------" << endl;
+        for (auto &item : cart) {
+            cout << left << setw(10) << item.first.productID << setw(15) << item.first.name << setw(10) << item.first.price << item.second << endl;
+        }
+    }
+    float calculateTotal() {
+        float total = 0;
+        for (auto &item : cart) {
+            total += item.first.price * item.second;
+        }
+        return total;
+    }
+};
+
+// Order Class
+class Order {
+public:
+    static int orderCounter;
+    int orderID;
+    float totalAmount;
+    vector<pair<Product, int>> orderDetails;
+    Order(ShoppingCart cart) {
+        orderID = ++orderCounter;
+        totalAmount = cart.calculateTotal();
+        orderDetails = cart.cart;
+    }
+    void displayOrder() {
+        cout << "\nOrder ID: " << orderID << "\nTotal Amount: " << totalAmount << endl;
+        cout << "Order Details:" << endl;
+        cout << "--------------------------------------------------" << endl;
+        cout << left << setw(10) << "Product ID" << setw(15) << "Name" << setw(10) << "Price" << "Quantity" << endl;
+        cout << "--------------------------------------------------" << endl;
+        for (auto &item : orderDetails) {
+            cout << left << setw(10) << item.first.productID << setw(15) << item.first.name << setw(10) << item.first.price << item.second << endl;
+        }
+    }
+};
+int Order::orderCounter = 0;
+
+int main() {
+    vector<Product> products = { 
+        Product("ABC", "Paper", 20), Product("CDE", "Pencil", 10),
+        Product("QWE", "Paper", 20), Product("TRE", "Pencil", 10),
+        Product("ASD", "Paper", 20), Product("ZXC", "Pencil", 10)
+    };
+    ShoppingCart cart;
+    vector<Order> orders;
+    int choice;
+    do {
+        cout << "\nMenu:\n1. View Products\n2. View Shopping Cart\n3. View Orders\n4. Exit\nEnter choice: ";
+        cin >> choice;
+        if (choice == 1) {
+            cout << "\nAvailable Products:" << endl;
+            cout << "--------------------------------------------------" << endl;
+            cout << left << setw(10) << "Product ID" << setw(15) << "Name" << "Price" << endl;
+            cout << "--------------------------------------------------" << endl;
+            for (auto &p : products) {
+                cout << left << setw(10) << p.productID << setw(15) << p.name << p.price << endl;
+            }
+            string pid;
+            cout << "Enter Product ID to add to cart (or 'exit' to return): ";
+            while (cin >> pid && pid != "exit") {
+                int qty;
+                cout << "Enter quantity: ";
+                cin >> qty;
+                for (auto &p : products) {
+                    if (p.productID == pid) {
+                        cart.addProduct(p, qty);
+                    }
+                }
+                cout << "Enter Product ID to add another (or 'exit' to return): ";
+            }
+        } else if (choice == 2) {
+            cart.viewCart();
+            cout << "\nDo you want to check out? (Y/N): ";
+            char ch;
+            cin >> ch;
+            if (ch == 'Y' || ch == 'y') {
+                orders.push_back(Order(cart));
+                cout << "You have successfully checked out the products!" << endl;
+                cart.cart.clear();
+            }
+        } else if (choice == 3) {
+            for (auto &order : orders) order.displayOrder();
+        }
+    } while (choice != 4);
+    return 0;
+}
